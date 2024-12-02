@@ -1,4 +1,6 @@
 flask
 python-dotenv
 wtforms
-dotenv
+python-dotenv
+Flask-Login
+Flask-Bcrypt
