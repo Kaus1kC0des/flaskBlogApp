@@ -1,6 +1,11 @@
 flask
 python-dotenv
 wtforms
-python-dotenv
+flask_wtf
 Flask-Login
 Flask-Bcrypt
+flask-sqlalchemy
+gunicorn
+pymysql
+dominate
+pillow
