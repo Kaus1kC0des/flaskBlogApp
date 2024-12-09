@@ -1,98 +1,98 @@
+from dominate.svg import title
 from flask import render_template, redirect, flash, url_for, request
 from flaskBlog import app, bcrypt, db
-from flaskBlog.forms import LoginForm, RegistrationForm, UpdateAccountForm
+from flaskBlog.forms import LoginForm, RegistrationForm, UpdateAccountForm, PostForm
 from flaskBlog.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 import secrets
 import os
 
-
-posts = [
-    {
-        'title': 'First Post',
-        'content': 'This is my first post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Second Post',
-        'content': 'This is my second post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Third Post',
-        'content': 'This is my third post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Fourth Post',
-        'content': 'This is my fourth post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Fifth Post',
-        'content': 'This is my fifth post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Sixth Post',
-        'content': 'This is my sixth post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Seventh Post',
-        'content': 'This is my seventh post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Eighth Post',
-        'content': 'This is my eighth post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Ninth Post',
-        'content': 'This is my ninth post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Tenth Post',
-        'content': 'This is my tenth post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Eleventh Post',
-        'content': 'This is my eleventh post',
-        'author': 'Kausik',
-        'date': '28/11/24'
-    },
-    {
-        'title': 'Twelfth Post',
-        'content': 'This is my twelfth post',
-        'author': 'Kausik',
-        'date': '2/12/24'
-    },
-    {
-        'title': 'Thirteenth Post',
-        'content': 'This is my thirteenth post',
-        'author': 'Kausik',
-        'date': '2/12/24'
-    }
-]
-
+# posts = [
+#     {
+#         'title': 'First Post',
+#         'content': 'This is my first post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Second Post',
+#         'content': 'This is my second post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Third Post',
+#         'content': 'This is my third post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Fourth Post',
+#         'content': 'This is my fourth post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Fifth Post',
+#         'content': 'This is my fifth post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Sixth Post',
+#         'content': 'This is my sixth post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Seventh Post',
+#         'content': 'This is my seventh post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Eighth Post',
+#         'content': 'This is my eighth post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Ninth Post',
+#         'content': 'This is my ninth post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Tenth Post',
+#         'content': 'This is my tenth post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Eleventh Post',
+#         'content': 'This is my eleventh post',
+#         'author': 'Kausik',
+#         'date': '28/11/24'
+#     },
+#     {
+#         'title': 'Twelfth Post',
+#         'content': 'This is my twelfth post',
+#         'author': 'Kausik',
+#         'date': '2/12/24'
+#     },
+#     {
+#         'title': 'Thirteenth Post',
+#         'content': 'This is my thirteenth post',
+#         'author': 'Kausik',
+#         'date': '2/12/24'
+#     }
+# ]
 
 @app.route('/')
 @app.route('/home')
 def home():
+    posts = Post.query.all()
     return render_template('index.html', title=None, posts=posts)
 
 
@@ -184,3 +184,18 @@ def account():
     return render_template('account.html', title='account', image_file=image_file, form=form)
 
 
+@app.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(
+            title=form.title.data,
+            content=form.content.data,
+            author=current_user
+        )
+        db.session.add(post)
+        db.session.commit()
+        flash("Wohoo!Your post has been created.", "success")
+        return redirect(url_for('home'))
+    return render_template('create.html',title='Create Post', form=form)
